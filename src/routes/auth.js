@@ -1,7 +1,7 @@
 const express = require('express');
 const { validateSignupData } = require('../utils/validation');
 const bcrypt = require('bcrypt');
-const {validatePassword} = require('../models/user')
+
 
 const User = require('../models/user');
 const { userAuth } = require('../middlewares/Auth');
@@ -36,7 +36,7 @@ authRouter.post('/signup', async (req,res)=>{
         }
 
         // passwordHasing
-        const hashPassword =  await bcrypt.hash(password,10)
+        // const hashPassword =  await bcrypt.hash(password,10)
 
        
         // creating new user
@@ -45,7 +45,7 @@ authRouter.post('/signup', async (req,res)=>{
             ...(lastName && {lastName}), 
             age, 
             emailId, 
-            password: hashPassword,
+            password,
              ...(skills&&{skills}), 
              ...(about&&{about}), 
              ...(gender &&{gender}), 
@@ -64,20 +64,20 @@ authRouter.post('/login', async (req,res)=>{
     
         //  blank field check
         if(!emailId || !password){
-            res.status(400).send('Email and password is required')
+            return res.status(400).send('Email and password is required')
         }
     
         //  find user
         const user = await User.findOne({emailId});
         if(!user){
-            res.status(400).send('user does not exist')
+            return res.status(400).send('user does not exist')
         }
     
        
         // comparing passwrord
-        isPasswordValid = await user.validatePassword
+        isPasswordValid = await user.validatePassword(password)
             if(!isPasswordValid) {
-                res.status(400).send('Password is not correct')
+                return res.status(400).send('Password is not correct')
             }
             if( isPasswordValid){
                 const token =  await user.getJwt()
@@ -85,12 +85,12 @@ authRouter.post('/login', async (req,res)=>{
                 res.status(201).send('login sucessful')
             }
     } catch (error) {
-        res.status(500).send('Login Failed ' + error.message)
+        return res.status(500).send('Login Failed ' + error.message)
     }
 });
 
 authRouter.post('/logout', async (req,res)=>{
-   await  res
+   await    res
     .cookie('token',null,{
         expires:new Date(Date.now())
     })
