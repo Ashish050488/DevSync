@@ -1,20 +1,30 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const ConnectDb = require('./config/database');
-const User = require('./models/user');
+const ConnectDb = require('./src/config/database');
+const User = require('./src/models/user');
 const cookieParser = require('cookie-parser');
+const cors = require('cors');
 const app = express();
 
+// Add CORS middleware
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true
+  })
+);
+
 app.use(express.json());
-app.use(cookieParser())
+app.use(cookieParser());
 
 
 
 
-const authRouter = require('./routes/auth')
-const profileRouter = require('./routes/profile')
-const requestRouter = require('./routes/request')
-const userRouter = require('./routes/user')
+
+const authRouter = require('./src/routes/auth')
+const profileRouter = require('./src/routes/profile')
+const requestRouter = require('./src/routes/request')
+const userRouter = require('./src/routes/user')
 
 
 app.use('/',authRouter);

@@ -79,11 +79,20 @@ authRouter.post('/login', async (req,res)=>{
             if(!isPasswordValid) {
                 return res.status(400).send('Password is not correct')
             }
-            if( isPasswordValid){
-                const token =  await user.getJwt()
-                res.cookie('token',token)
-                res.status(201).send('login sucessful')
-            }
+           if (isPasswordValid) {
+  const token = await user.getJwt();
+  res.cookie('token', token, {
+    httpOnly: true,
+    secure: false, // ⚠️ set to true in production with HTTPS
+    sameSite: 'Lax',
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+    path: '/',
+  });
+  res.status(201).json({
+    token,
+    user,
+  });
+}
     } catch (error) {
         return res.status(500).send('Login Failed ' + error.message)
     }
