@@ -11,52 +11,50 @@ const { userAuth } = require('../middlewares/Auth');
 
 const authRouter = express.Router();
 
-authRouter.post('/signup', async (req,res)=>{
-    try {
+// In your authRouter.js file
 
-        const {
-            firstName,
-            lastName,
-            age,
-            emailId,
-            password,
-            skills,
-            about,
-            gender,
-            photoUrl
-          } = req.body;
+authRouter.post('/signup', async (req, res) => {
+  try {
+    validateSignupData(req);
 
-        // validation check 
-        validateSignupData(req)
+    const { emailId } = req.body;
 
-        //  checking if user already exist;
-        const existingUser =  await User.findOne({emailId});
-        if(existingUser){
-            return res.status(400).send('Signup failed : '+ emailId + ' is already registered')
-        }
-
-        // passwordHasing
-        // const hashPassword =  await bcrypt.hash(password,10)
-
-       
-        // creating new user
-        const user = new User({
-            firstName,
-            ...(lastName && {lastName}), 
-            age, 
-            emailId, 
-            password,
-             ...(skills&&{skills}), 
-             ...(about&&{about}), 
-             ...(gender &&{gender}), 
-             ...(photoUrl && { photoUrl })
-        });
-        await  user.save()
-        res.status(201).send('data saved') 
-    } catch (err) {
-        res.status(400).send('Signup failed' + err.message)        
+    const existingUser = await User.findOne({ emailId });
+    if (existingUser) {
+      return res.status(409).json({ message: emailId + ' is already registered' });
     }
-})
+
+    const user = new User(req.body);
+    await user.save();
+
+    // --- START: ADD THIS LOGIN LOGIC ---
+
+    // 1. Get the token for the new user
+    const token = await user.getJwt();
+
+    // 2. Set the token in an httpOnly cookie
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: false, // Set to true in production (HTTPS)
+      sameSite: 'Lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      path: '/',
+    });
+
+    // ---  END: ADD THIS LOGIN LOGIC  ---
+
+    const userToReturn = user.toObject();
+    delete userToReturn.password;
+
+    res.status(201).json({
+      message: 'User registered and logged in successfully!',
+      user: userToReturn,
+    });
+
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
 
 authRouter.post('/login', async (req,res)=>{
     try {

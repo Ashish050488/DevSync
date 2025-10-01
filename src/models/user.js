@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const  bcrpt = require('bcrypt') 
+const  bcrypt  = require('bcrypt') 
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
@@ -65,7 +65,7 @@ userSchema.pre('save',async function(next) {
     const user = this;
    try {
     if(user.isModified('password')){
-        user.password = await bcrpt.hash(user.password,10)
+        user.password = await bcrypt .hash(user.password,10)
     }
     next()
    } catch (error) {
@@ -77,7 +77,7 @@ userSchema.pre('save',async function(next) {
 userSchema.methods.validatePassword = async  function(passwordInputByUser){
     const user = this;
     const passwordHash = user.password
-    const isPasswordValid = await bcrpt.compare(passwordInputByUser,passwordHash)
+    const isPasswordValid = await bcrypt .compare(passwordInputByUser,passwordHash)
     return isPasswordValid 
 }
 
