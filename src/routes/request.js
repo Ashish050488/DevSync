@@ -6,6 +6,7 @@ const requestRouter = express.Router();
 const {userAuth} =   require('../middlewares/Auth');
 const ConnectionRequest = require('../models/connectionRequest');
 const User = require('../models/user');
+const sendEmail =require('../utils/sendEmail');
 
 requestRouter.post('/request/send/:status/:toUserId', userAuth, async (req, res) => {
 
@@ -44,7 +45,21 @@ requestRouter.post('/request/send/:status/:toUserId', userAuth, async (req, res)
         const connectionRequest = new ConnectionRequest({
             fromUserId,toUserId,status
         })
-        const data = await connectionRequest.save()
+        const data = await connectionRequest.save();
+
+
+
+
+  if (status === 'interested') {
+  const emailRes = await sendEmail.run({
+    subject: `${req.user.firstName} ${req.user.lastName} sent you a connection request`,
+    htmlBody: `<h1>${req.user.firstName} has shown interest in you.</h1>`,
+    textBody: `${req.user.firstName} has shown interest in you.`
+  });
+  console.log(emailRes);
+}
+
+
         res.send({
             message: `${req.user.firstName} has ${status === 'interested' ? 'shown interest in' : 'ignored'} you.`,
             data 
