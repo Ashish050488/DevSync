@@ -71,18 +71,12 @@ const validateSignupData = (req) => {
 const ValidateEditProfileData = (req) => {
   const { firstName, lastName, emailId, age, gender, photoUrl, about, skills } = req.body;
 
-  const isValidImageUrl = (urlString) => {
-    const validExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
-    if (!validator.isURL(urlString)) return false;
-    try {
-      const url = new URL(urlString);
-      const pathname = url.pathname.toLowerCase();
-      const hasValidExtension = validExtensions.some(ext => pathname.endsWith(ext));
-      if (!hasValidExtension && url.searchParams.has('q')) return true;
-      return hasValidExtension;
-    } catch (err) {
-      return false;
-    }
+const isValidImageUrl = (urlString) => {
+    // This will check for a valid URL with http or https protocol.
+    return validator.isURL(urlString, {
+        protocols: ['http', 'https'],
+        require_protocol: true
+    });
   };
 
   if (firstName && (firstName.length < 2 || firstName.length > 50)) {

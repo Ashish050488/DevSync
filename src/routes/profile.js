@@ -24,12 +24,17 @@ profileRouter.get('/profile/view', userAuth, async (req, res) => {
 
 
 
+// profile.js
+
 profileRouter.patch('/profile/edit', userAuth, async (req, res) => {
     try {
         console.log("🧪 PATCH /profile/edit — BODY:", req.body);
-        if (!ValidateEditProfileData(req)) {
-            throw new Error('Invalid edit request');
-        }
+
+        // --- THIS IS THE FIX ---
+        // Just call the function. It will throw an error if invalid.
+        ValidateEditProfileData(req);
+        // -----------------------
+
         const LoggedInUser = req.user;
         Object.keys(req.body).forEach((key) => {
             if (req.body[key] !== undefined) {
@@ -39,7 +44,6 @@ profileRouter.patch('/profile/edit', userAuth, async (req, res) => {
 
         await LoggedInUser.save();
 
-        // Send JSON response with updated user data
         res.json({
             message: `${LoggedInUser.firstName} your data has been updated successfully`,
             user: LoggedInUser
@@ -50,7 +54,6 @@ profileRouter.patch('/profile/edit', userAuth, async (req, res) => {
         res.status(400).json({ message: err.message });
     }
 });
-
 
 
 
