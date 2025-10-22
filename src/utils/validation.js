@@ -92,10 +92,11 @@ const isValidImageUrl = (urlString) => {
   }
 
   if (age !== undefined) {
-    if (typeof age !== 'number' || isNaN(age)) {
-      throw new Error('Age must be a valid number');
-    } else if (age < 18 || age > 120) {
-      throw new Error('Age must be between 18 and 120');
+    const ageString = String(age);
+
+    // Use isInt to check if it's a valid integer AND check the range
+    if (!validator.isInt(ageString, { min: 18, max: 120 })) {
+      throw new Error('Age must be a valid number between 18 and 120');
     }
   }
 
